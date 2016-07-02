@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <string.h>
 #include <sys/types.h>
@@ -7,10 +6,10 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <netdb.h> 
  
 #define ENTER 13
-#define ESC 27
-#define BUFFSIZE = 2048;
+#define BUFFSIZE 2048
 
 using namespace std;
  
@@ -19,12 +18,11 @@ void client(int porta)
 	bool sair = false;
    	char buffer[BUFFSIZE];
 	int descritor;
+        const char *host = "vitor-X451MA";
 	 
 	struct sockaddr_in meuEndereco,enderecoRemoto;
-	socklen_t tamanhoSocket;
-	hostent *hp;//Informações do host
-
-	int servlen = sizeof(enderecoRemoto);
+	struct hostent *hp;//Informações do host
+	socklen_t servlen = sizeof(enderecoRemoto);
 	 
 	//Criando o Socket
 	 
@@ -47,40 +45,39 @@ void client(int porta)
 
 	}
 
-	hp = gethostbyname("vitor-X451MA");//pega o endereço do servidor a partir de seu nome
+	hp = gethostbyname(host);//pega o endereço do servidor a partir de seu nome
 	
 	if (!hp) {
 
-        	cout << "=>Erro ao obter endereço de %s" << host endl;
+        	cout << "=>Erro ao obter endereço de " << inet_ntoa(enderecoRemoto.sin_addr);
+                exit(0);
 
 	}
 	//SOCKET DO SERVIDOR
 	memset((char *) &enderecoRemoto, 0, sizeof(enderecoRemoto));
 	enderecoRemoto.sin_family = AF_INET;
-	enderecoRemoto.sin_port = htons(hp);
+	enderecoRemoto.sin_port = htons(SERVICE_PORT);
 
 	//Coloca o endereço do host na estrutura de endereço do server
 	memcpy((void *)&enderecoRemoto.sin_addr, hp->h_addr_list[0], hp->h_length);
 
-	//Envia a mensagem de inicio para o server
-	if (sendto(descritor, "HELLO_SRV", strlen("HELLO_SRV"), 0, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
-		cout << "Falha ao contactar servidor" << endl;
-		exit(0);
-	}
+	
 
 	do{
+		//Envia a mensagem de inicio para o server
+		sendto(descritor, "HELLO_SRV", strlen("HELLO_SRV"), 0, (struct sockaddr *)&enderecoRemoto, sizeof(enderecoRemoto));
 
 	        //Recebe comfirmação do servidor
-		recvfrom(descritor, buffer, BUFLEN, 0, (struct sockaddr *)&enderecoRemoto, &servlen);
+		recvfrom(descritor, buffer, BUFFSIZE, 0, (struct sockaddr *)&enderecoRemoto, &servlen);
 
-	}while(strcmp(buffer,"HELLO_CLT");
+	}while(strcmp(buffer,"HELLO_CLT"));
  	
 	do {
 		cout << "Cliente: ";
 		do {
 			cin >> buffer;
 		    	sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, servlen);    
-		    	if (*buffer == ESC) {
+		    	if (*buffer == "BYE_SRV") {
 
 				sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, servlen); 
 				sair = true;
@@ -92,10 +89,10 @@ void client(int porta)
 		cout << "Servidor: ";
 		do {
 
-		    	recvfrom(descritor, buffer, BUFLEN, 0, (struct sockaddr *)&enderecoRemoto, &servlen);
+		    	recvfrom(descritor, buffer, BUFFSIZE, 0, (struct sockaddr *)&enderecoRemoto, &servlen);
 			cout << buffer << " ";
 
-		    	if (*buffer == ESC) {
+		    	if (*buffer == "BYE_CLT") {
 				
 				sair = true;
 				break;
@@ -106,8 +103,8 @@ void client(int porta)
     	} while (!sair);
  
 
-        cout << "\n\n=> Fim de papo com" << host endl;
-        close(descriptor);
+        cout << "\n\n=> Fim de papo com" << host;
+        close(descritor);
       
         exit(1);
 }

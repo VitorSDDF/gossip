@@ -8,53 +8,62 @@
 #include <unistd.h>
 #include <netdb.h>
  
+#define ENTER 13
+#define ESC 27
+#define BUFFSIZE 2048
+
 using namespace std;
  
 int cliente(int porta)
 {
-
+	
+	bool sair = false;
  	struct sockaddr_in meuEndereco;	//Meu endereço
 	struct sockaddr_in enderecoRemoto;//Endereço remoto
 	int descritor;// descritor do socket 
-	char buf[BUFSIZE];//buffer para troca de mensagens
+	char buffer[BUFFSIZE];//buffer para troca de mensagens
+
+	socklen_t remlen = sizeof(enderecoRemoto);
 
 
 	//criando um socket UDP
 
 	if ((descritor = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		perror("Erro ao criar socket\n");
+		cout <<"Erro ao criar socket"<< endl;
 		return 0;
 	}
 
-	/* bind the socket to any valid IP address and a specific port */
+	
 
 	memset((char *)&meuEndereco, 0, sizeof(meuEndereco));
 	meuEndereco.sin_family = AF_INET;
 	meuEndereco.sin_addr.s_addr = htonl(INADDR_ANY);
 	meuEndereco.sin_port = htons(porta);
-
+        //Associando o socket a algum ip válido e porta especifica
 	if (bind(descritor, (struct sockaddr *)&meuEndereco, sizeof(meuEndereco)) < 0) {
 
-		perror("Erro ao criar socket");
+		cout <<"Erro ao criar socket"<< endl;
 
 	}
 
 	do{
-		//Recebe comfirmação do cliente
-		recvfrom(descritor, buffer, BUFLEN, 0, (struct sockaddr *)&enderecoRemoto, &servlen);
-	}while(strcmp(buffer,"HELLO_SRV"))
- 
-                
-	sendto(descritor, "HELLO_CLT", strlen("HELLO_CLT"), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
+		//Recebe requisição do cliente
+		recvfrom(descritor, buffer, BUFFSIZE, 0, (struct sockaddr *)&enderecoRemoto, &remlen);
+
+	}while(strcmp(buffer,"HELLO_SRV"));
+ 
+        //Envia Confirmação de recebimento
+	sendto(descritor, "HELLO_CLT", strlen("HELLO_CLT"), 0, (struct sockaddr *)&enderecoRemoto, sizeof(enderecoRemoto));
+        //Inicia a troca de mensagens pelo teclado
     	cout << "Cliente: ";
         do {
 
-            recvfrom(descritor, buffer, BUFLEN, 0, (struct sockaddr *)&enderecoRemoto, &servlen);
+            recvfrom(descritor, buffer, BUFFSIZE, 0, (struct sockaddr *)&enderecoRemoto, &remlen);
 
             cout << buffer << " ";
 
-            if (*buffer == 27){
+            if (!strcmp(buffer,"BYE_SRV")){
                 
                 sair = true;
 		break;
@@ -67,12 +76,12 @@ int cliente(int porta)
 
                 cin >> buffer;
 
-                sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, servlen);
+                sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, remlen);
           
-                if (*buffer == ESC) {
+                if (!strcmp(buffer,"BYE_CLT")) {
 
-                    sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, servlen);              
-                    isExit = true;
+                    sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, remlen);              
+                    sair = true;
                     break;
 
                 }
@@ -81,13 +90,13 @@ int cliente(int porta)
             cout << "Cliente: ";
             do {
 
-                recvfrom(descritor, buffer, BUFLEN, 0, (struct sockaddr *)&enderecoRemoto, &servlen);
+                recvfrom(descritor, buffer, BUFFSIZE, 0, (struct sockaddr *)&enderecoRemoto, &remlen);
 
                 cout << buffer << " ";
 
-                if (*buffer == ESC) {
+                if (!strcmp(buffer,"BYE_SRV")) {
                   
-                    isExit = true;
+                    sair = true;
 		    break;
 
                 }
