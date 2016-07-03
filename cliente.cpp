@@ -8,8 +8,8 @@
 #include <unistd.h>
 #include <netdb.h> 
  
-#define ENTER 13
 #define BUFFSIZE 2048
+#define PORTA_INICIAL_REMOTA 1500
 
 using namespace std;
  
@@ -18,7 +18,7 @@ void client(int porta)
 	bool sair = false;
    	char buffer[BUFFSIZE];
 	int descritor;
-        const char *host = "vitor-X451MA";
+        int portaDemuxServ;
 	 
 	struct sockaddr_in meuEndereco,enderecoRemoto;
 	struct hostent *hp;//Informações do host
@@ -32,6 +32,10 @@ void client(int porta)
 		exit(0);
 
 	}
+	//Permissões necessárias para broadcast
+	int broadcastEnable=1;
+	setsockopt(descritor, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable));
+
 
 	memset((char *)&meuEndereco, 0, sizeof(meuEndereco));//Deixa sinalizado que o S.O pode escolher o IP
 	meuEndereco.sin_family = AF_INET;
@@ -44,24 +48,11 @@ void client(int porta)
 		cout << "=>Erro ao vincular socket" << endl;
 
 	}
-
-	hp = gethostbyname(host);//pega o endereço do servidor a partir de seu nome
 	
-	if (!hp) {
-
-        	cout << "=>Erro ao obter endereço de " << inet_ntoa(enderecoRemoto.sin_addr);
-                exit(0);
-
-	}
 	//SOCKET DO SERVIDOR
 	memset((char *) &enderecoRemoto, 0, sizeof(enderecoRemoto));
 	enderecoRemoto.sin_family = AF_INET;
-	enderecoRemoto.sin_port = htons(SERVICE_PORT);
-
-	//Coloca o endereço do host na estrutura de endereço do server
-	memcpy((void *)&enderecoRemoto.sin_addr, hp->h_addr_list[0], hp->h_length);
-
-	
+	enderecoRemoto.sin_port = htons(PORTA_INICIAL_REMOTA);
 
 	do{
 		//Envia a mensagem de inicio para o server
@@ -71,6 +62,9 @@ void client(int porta)
 		recvfrom(descritor, buffer, BUFFSIZE, 0, (struct sockaddr *)&enderecoRemoto, &servlen);
 
 	}while(strcmp(buffer,"HELLO_CLT"));
+
+	//recebe o numero da porta a qual deve falar ao servidor
+        while(recvfrom(descritor, buffer, BUFFSIZE, 0, (struct sockaddr *)&enderecoRemoto, &servlen) < 0);
  	
 	do {
 		cout << "Cliente: ";
@@ -103,7 +97,7 @@ void client(int porta)
     	} while (!sair);
  
 
-        cout << "\n\n=> Fim de papo com" << host;
+        cout << "\n\n=> Fim de papo com" << endl;
         close(descritor);
       
         exit(1);

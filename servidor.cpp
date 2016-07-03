@@ -1,20 +1,7 @@
-#include <iostream>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <netdb.h>
- 
-#define ENTER 13
-#define ESC 27
-#define BUFFSIZE 2048
-
+#include "gossip.h"
 using namespace std;
  
-int cliente(int porta)
+void servidor(int porta)
 {
 	
 	bool sair = false;
@@ -38,9 +25,9 @@ int cliente(int porta)
 	memset((char *)&meuEndereco, 0, sizeof(meuEndereco));
 	meuEndereco.sin_family = AF_INET;
 	meuEndereco.sin_addr.s_addr = htonl(INADDR_ANY);
-	meuEndereco.sin_port = htons(porta);
+	meuEndereco.sin_port = htons(PORTA_INICIAL_REMOTA);
         //Associando o socket a algum ip válido e porta especifica
-	if (bind(descritor, (struct sockaddr *)&meuEndereco, sizeof(meuEndereco)) < 0) {
+	if (bind(descritor, (struct sockaddr *)&meuEndereco, sizeof(meuEndereco)) < 0){
 
 		cout <<"Erro ao criar socket"<< endl;
 
@@ -52,7 +39,10 @@ int cliente(int porta)
 		recvfrom(descritor, buffer, BUFFSIZE, 0, (struct sockaddr *)&enderecoRemoto, &remlen);
 
 	}while(strcmp(buffer,"HELLO_SRV"));
- 
+
+        //Modifica porta
+        meuEndereco.sin_port = htons(porta);
+
         //Envia Confirmação de recebimento
 	sendto(descritor, "HELLO_CLT", strlen("HELLO_CLT"), 0, (struct sockaddr *)&enderecoRemoto, sizeof(enderecoRemoto));
         //Inicia a troca de mensagens pelo teclado

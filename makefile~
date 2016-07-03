@@ -1,0 +1,16 @@
+all: gossip
+
+gossip: main.o cliente.o servidor.o \
+    g++ main.o cliente.o servidor.o -o gossip
+
+main.o: main.cpp \
+    g++ -c main.cpp
+
+cliente.o: cliente.cpp \
+    g++ -c cliente.cpp
+
+servidor.o: servidor.cpp \
+    g++ -c servidor.cpp
+
+clean:  \
+    rm *o gossip 
