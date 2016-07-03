@@ -97,7 +97,7 @@ void client(int porta)
     	} while (!sair);
  
 
-        cout << "\n\n=> Fim de papo com" << host;
+        cout << "\n\n=> Fim de papo com" << endl;
         close(descritor);
       
         exit(1);

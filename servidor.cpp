@@ -16,8 +16,9 @@ void servidor(int porta)
 	//criando um socket UDP
 
 	if ((descritor = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+
 		cout <<"Erro ao criar socket"<< endl;
-		return 0;
+
 	}
 
 	

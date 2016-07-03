@@ -1,16 +1,24 @@
+CC=gcc
+CXX=g++
+RM=rm -f
+CPPFLAGS=-g $(shell root-config --cflags)
+LDFLAGS=-g $(shell root-config --ldflags)
+LDLIBS=$(shell root-config --libs)
+
+SRCS=main.cpp cliente.cpp servidor.cpp gossip.h
+OBJS=$(subst .cpp,.o,$(SRCS))
+
 all: gossip
 
-gossip: main.o cliente.o servidor.o \
-    gcc main.o cliente.o servidor.o -o gossip
+gossip: $(OBJS)
+    $(CXX) $(LDFLAGS) -o gossip $(OBJS) $(LDLIBS) 
 
-main.o: main.cpp \
-    gcc -c main.cpp -lstdc++
+cliente.o: cliente.cpp gossip.h
 
-cliente.o: cliente.cpp \
-    gcc -c cliente.cpp
+servidor.o: servidor.cpp gossip.h
 
-servidor.o: servidor.cpp \
-    gcc -c servidor.cpp
+clean:
+    $(RM) $(OBJS)
 
-clean:  \
-    rm *o gossip 
+dist-clean: clean
+    $(RM) gossip

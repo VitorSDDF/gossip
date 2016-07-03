@@ -1,10 +1,8 @@
-all: gossip
-
 gossip: main.o cliente.o servidor.o \
     g++ main.o cliente.o servidor.o -o gossip
 
 main.o: main.cpp \
-    g++ -c main.cpp
+    g++ -c main.cpp -lstdc++
 
 cliente.o: cliente.cpp \
     g++ -c cliente.cpp
