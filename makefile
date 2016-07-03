@@ -1,16 +1,19 @@
+CFLAGS=-ansi -Wall -std=c++11 -c -g
+
 all: gossip
 
-gossip: main.o cliente.o servidor.o \
-    gcc main.o cliente.o servidor.o -o gossip
+gossip: gossip.h cliente.o servidor.o
+	g++ -g main.cpp cliente.o servidor.o -o gossip.out
 
-main.o: main.cpp \
-    gcc -c main.cpp -lstdc++
+#main.o: gossip.h main.cpp
+#    g++ $(CFLAGS) main.cpp -lstdc++
 
-cliente.o: cliente.cpp \
-    gcc -c cliente.cpp
+cliente.o: cliente.cpp
+	g++ $(CFLAGS) cliente.cpp
 
-servidor.o: servidor.cpp \
-    gcc -c servidor.cpp
+servidor.o: gossip.h servidor.cpp
+	g++ $(CFLAGS) servidor.cpp
 
-clean:  \
-    rm *o gossip 
+clean:
+	rm -f *.out
+	rm -f *.o   
