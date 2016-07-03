@@ -6,10 +6,8 @@ void cliente(int porta)
 	bool sair = false;
    	char buffer[BUFFSIZE];
 	int descritor;
-        int portaDemuxServ;
 	 
 	struct sockaddr_in meuEndereco,enderecoRemoto;
-	struct hostent *hp;//Informações do host
 	socklen_t servlen = sizeof(enderecoRemoto);
 	 
 	//Criando o Socket
