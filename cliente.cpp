@@ -8,8 +8,8 @@ void cliente(int porta)
 	int descritor;
         char hello_clt[10] = "HELLO_CLT";
         char hello_srv[10] = "HELLO_SRV";
-        char bye_srv[8] = "BYE_SRV";
-        char bye_clt[8] = "BYE_CLT";
+        char bye_srv[10] = "BYE_SRV\n";
+        char bye_clt[10] = "BYE_CLT\n";
 	 
 	struct sockaddr_in meuEndereco;
 	socklen_t cltlen;
@@ -41,40 +41,40 @@ void cliente(int porta)
 		recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr *)&meuEndereco, &cltlen);
        
 	}while(strcmp(buffer,hello_clt));
- 	cout << "Handshake!" << endl;
+
+ 	cout << "Handshake completo com o servidor" << endl;
+        cout << "*************************** Servidor ***********************" << endl;
+
 	do {
-		cout << "Cliente: ";
-		do {
-			cin >> buffer;
-                        sendto(descritor, buffer, strlen(buffer) , 0, (struct sockaddr *)&meuEndereco, sizeof(struct sockaddr_in));    
+		cout << "\nCliente: ";
+			
+		//Limpa o buffer
+                bzero(buffer,BUFFSIZE);
+		cin >> buffer;
+                sendto(descritor, buffer, strlen(buffer) , 0, (struct sockaddr *)&meuEndereco, sizeof(struct sockaddr_in));    
 
-		    	if (!strcmp(buffer,bye_srv)) {
+	 	if (!strcmp(buffer,bye_srv)) {
 
-				sendto(descritor, buffer, strlen(buffer) , 0, (struct sockaddr *)&meuEndereco, sizeof(struct sockaddr_in));
-				sair = true;
-                                break;
+			sendto(descritor, buffer, strlen(buffer) , 0, (struct sockaddr *)&meuEndereco, sizeof(struct sockaddr_in));
+			sair = true;
 
-		    	}
-		} while (1);
+		}
 		 
-		cout << "Servidor: ";
-		do {
-                        cltlen = sizeof(struct sockaddr_in);
-			recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr *)&meuEndereco, &cltlen);
-			cout << buffer << " ";
+		cout << "\nServidor: ";
+                cltlen = sizeof(struct sockaddr_in);
+		recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr *)&meuEndereco, &cltlen);
+		cout << buffer << " ";
 
-		    	if (!strcmp(buffer,bye_clt)) {
+		if (!strcmp(buffer,bye_clt)) {
 				
-				sair = true;
-				break;
-		    	}
-	 
-		} while (1);
+			sair = true;
+		    	
+		}
  
     	} while (!sair);
  
 
-        cout << "\n\n=> Fim de papo com" << endl;
+        cout << "\n\n=> Fim de papo!" << endl;
         close(descritor);
       
         exit(1);

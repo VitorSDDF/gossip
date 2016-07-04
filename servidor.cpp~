@@ -11,8 +11,8 @@ void servidor(int porta)
 	char buffer[BUFFSIZE];//buffer para troca de mensagens
         char hello_clt[10] = "HELLO_CLT";
         char hello_srv[10] = "HELLO_SRV";
-        char bye_srv[8] = "BYE_SRV";
-        char bye_clt[8] = "BYE_CLT";
+        char bye_srv[10] = "BYE_SRV\n";
+        char bye_clt[10] = "BYE_CLT\n";
 
 	socklen_t remlen;
 
@@ -49,31 +49,33 @@ void servidor(int porta)
 		recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
 
 	}while(strcmp(buffer,hello_srv));
-
+        //Limpa o buffer
+        bzero(buffer,BUFFSIZE);
         //Envia Confirmação de recebimento
 	sendto(descritor, hello_clt, strlen(hello_clt), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
+
+        cout << "Handshake completo com o cliente" << endl;
+        cout << "*************************** Servidor ***********************" << endl;
 
         //Inicia a troca de mensagens pelo teclado
     	cout << "Cliente: ";
         do {
 
-            remlen = sizeof(enderecoRemoto);
-	    recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
+        	remlen = sizeof(enderecoRemoto);
+	    	recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
 
-            cout << buffer << " ";
+            	cout << buffer << " ";
 
-            if (!strcmp(buffer,bye_srv)){
+            	if (!strcmp(buffer,bye_srv)){
                 
-                sair = true;
-		break;
-            }
-        } while (1);
+                	sair = true;
+            	}
  
-        do {
-            cout << "\nServidor: ";
-            do {
+            	cout << "\nServidor: ";
 
-                cin >> buffer;
+  	    	//Limpa o buffer
+            	bzero(buffer,BUFFSIZE);
+        	cin >> buffer;
 
                 sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
           
@@ -81,15 +83,14 @@ void servidor(int porta)
 
                     sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));              
                     sair = true;
-                    break;
 
                 }
-            } while (1);
  
-            cout << "Cliente: ";
-            do {
+            	cout << "Cliente: ";
 
-                remlen = sizeof(enderecoRemoto);
+		//Limpa o buffer
+        	bzero(buffer,BUFFSIZE);                
+		remlen = sizeof(enderecoRemoto);
 		recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
 
                 cout << buffer << " ";
@@ -100,10 +101,9 @@ void servidor(int porta)
 		    break;
 
                 }
-            } while (1);
         } while (!sair);
   
-    cout << "\n=> Fim de papo!!!.";
+    cout << "\n\n=> Fim de papo!!!";
  
     close(descritor);
 }
