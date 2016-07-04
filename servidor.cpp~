@@ -9,23 +9,32 @@ void servidor(int porta)
 	struct sockaddr_in enderecoRemoto;//Endereço remoto
 	int descritor;// descritor do socket 
 	char buffer[BUFFSIZE];//buffer para troca de mensagens
+        char hello_clt[10] = "HELLO_CLT";
+        char hello_srv[10] = "HELLO_SRV";
+        char bye_srv[8] = "BYE_SRV";
+        char bye_clt[8] = "BYE_CLT";
 
-	socklen_t remlen = sizeof(enderecoRemoto);
+	socklen_t remlen;
 
 
 	//criando um socket UDP
 
 	if ((descritor = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+
 		cout <<"Erro ao criar socket"<< endl;
-		return 0;
+
 	}
 
-	
-
-	memset((char *)&meuEndereco, 0, sizeof(meuEndereco));
+	//Endereço Servidor
 	meuEndereco.sin_family = AF_INET;
 	meuEndereco.sin_addr.s_addr = htonl(INADDR_ANY);
-	meuEndereco.sin_port = htons(PORTA_INICIAL_REMOTA);
+	meuEndereco.sin_port = htons(porta);
+	//Endereco Remoto
+	enderecoRemoto.sin_family = AF_INET;
+	enderecoRemoto.sin_addr.s_addr = htonl(INADDR_ANY);
+	enderecoRemoto.sin_port = htons(porta);
+
+
         //Associando o socket a algum ip válido e porta especifica
 	if (bind(descritor, (struct sockaddr *)&meuEndereco, sizeof(meuEndereco)) < 0){
 
@@ -36,24 +45,24 @@ void servidor(int porta)
 	do{
 
 		//Recebe requisição do cliente
-		recvfrom(descritor, buffer, BUFFSIZE, 0, (struct sockaddr *)&enderecoRemoto, &remlen);
+                remlen = sizeof(enderecoRemoto);
+		recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
 
-	}while(strcmp(buffer,"HELLO_SRV"));
-
-        //Modifica porta
-        meuEndereco.sin_port = htons(porta);
+	}while(strcmp(buffer,hello_srv));
 
         //Envia Confirmação de recebimento
-	sendto(descritor, "HELLO_CLT", strlen("HELLO_CLT"), 0, (struct sockaddr *)&enderecoRemoto, sizeof(enderecoRemoto));
+	sendto(descritor, hello_clt, strlen(hello_clt), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
+
         //Inicia a troca de mensagens pelo teclado
     	cout << "Cliente: ";
         do {
 
-            recvfrom(descritor, buffer, BUFFSIZE, 0, (struct sockaddr *)&enderecoRemoto, &remlen);
+            remlen = sizeof(enderecoRemoto);
+	    recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
 
             cout << buffer << " ";
 
-            if (!strcmp(buffer,"BYE_SRV")){
+            if (!strcmp(buffer,bye_srv)){
                 
                 sair = true;
 		break;
@@ -66,11 +75,11 @@ void servidor(int porta)
 
                 cin >> buffer;
 
-                sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, remlen);
+                sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
           
-                if (!strcmp(buffer,"BYE_CLT")) {
+                if (!strcmp(buffer,bye_clt)) {
 
-                    sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, remlen);              
+                    sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));              
                     sair = true;
                     break;
 
@@ -80,11 +89,12 @@ void servidor(int porta)
             cout << "Cliente: ";
             do {
 
-                recvfrom(descritor, buffer, BUFFSIZE, 0, (struct sockaddr *)&enderecoRemoto, &remlen);
+                remlen = sizeof(enderecoRemoto);
+		recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
 
                 cout << buffer << " ";
 
-                if (!strcmp(buffer,"BYE_SRV")) {
+                if (!strcmp(buffer,bye_srv)) {
                   
                     sair = true;
 		    break;

@@ -9,7 +9,6 @@
 #include <netdb.h> 
 
 #define BUFFSIZE 2048
-#define PORTA_INICIAL_REMOTA 1500
 #define PORTA_PADRAO 10101
 
 void cliente(int porta);
