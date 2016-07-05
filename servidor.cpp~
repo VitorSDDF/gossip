@@ -11,8 +11,8 @@ void servidor(int porta)
 	char buffer[BUFFSIZE];//buffer para troca de mensagens
         char hello_clt[10] = "HELLO_CLT";
         char hello_srv[10] = "HELLO_SRV";
-        char bye_srv[10] = "BYE_SRV\n";
-        char bye_clt[10] = "BYE_CLT\n";
+        char bye_srv[8] = "BYE_SRV";
+        char bye_clt[8] = "BYE_CLT";
 
 	socklen_t remlen;
 
@@ -49,65 +49,41 @@ void servidor(int porta)
 		recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
 
 	}while(strcmp(buffer,hello_srv));
-        //Limpa o buffer
-        bzero(buffer,BUFFSIZE);
+
         //Envia Confirmação de recebimento
 	sendto(descritor, hello_clt, strlen(hello_clt), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
-
-        cout << "Handshake completo com o cliente" << endl;
-        cout << "*************************** Servidor ***********************" << endl;
-
+        cout << "Handshake concluido com o cliente" << endl;
         //Inicia a troca de mensagens pelo teclado
     	cout << "Cliente: ";
         do {
 
-        	remlen = sizeof(enderecoRemoto);
-	    	recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
+            remlen = sizeof(enderecoRemoto);
+	    recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
 
-            	cout << buffer << " ";
+            cout << buffer << " ";
 
-            	if (!strcmp(buffer,bye_srv)){
+            if (!strcmp(buffer,bye_srv)){
                 
-                	sair = true;
-            	}
+                sair = true;
+            }
  
-            	cout << "\nServidor: ";
+            cout << "\nServidor: ";
 
-  	    	//Limpa o buffer
-            	bzero(buffer,BUFFSIZE);
-        	cin >> buffer;
+            cin.getline(buffer,BUFFSIZE);
 
-                sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
+            sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
           
-                if (!strcmp(buffer,bye_clt)) {
+            if (!strcmp(buffer,bye_clt)) {
 
-                    sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));              
-                    sair = true;
+            	sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));              
+                sair = true;
 
-                }
- 
-            	cout << "Cliente: ";
+            }
 
-		//Limpa o buffer
-        	bzero(buffer,BUFFSIZE);                
-		remlen = sizeof(enderecoRemoto);
-		recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
-
-                cout << buffer << " ";
-
-                if (!strcmp(buffer,bye_srv)) {
-                  
-                    sair = true;
-		    break;
-
-                }
         } while (!sair);
   
-    cout << "\n\n=> Fim de papo!!!";
+    cout << "\n=> Fim de papo!!!.";
  
     close(descritor);
 }
-
-
-
 

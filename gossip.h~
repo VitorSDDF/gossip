@@ -7,11 +7,19 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <netdb.h> 
+#include <pthread.h>
 
 #define BUFFSIZE 2048
-#define PORTA_INICIAL_REMOTA 1500
 #define PORTA_PADRAO 10101
 
 void cliente(int porta);
 
 void servidor(int porta);
+
+void* escutaCLT(void *arg);
+
+void* falaCLT(void *arg);
+
+void* escutaSRV(void *arg);
+
+void* falaSRV(void *arg);

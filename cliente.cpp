@@ -8,8 +8,8 @@ void cliente(int porta)
 	int descritor;
         char hello_clt[10] = "HELLO_CLT";
         char hello_srv[10] = "HELLO_SRV";
-        char bye_srv[10] = "BYE_SRV\n";
-        char bye_clt[10] = "BYE_CLT\n";
+        char bye_srv[8] = "BYE_SRV";
+        char bye_clt[8] = "BYE_CLT";
 	 
 	struct sockaddr_in meuEndereco;
 	socklen_t cltlen;
@@ -41,26 +41,22 @@ void cliente(int porta)
 		recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr *)&meuEndereco, &cltlen);
        
 	}while(strcmp(buffer,hello_clt));
-
- 	cout << "Handshake completo com o servidor" << endl;
-        cout << "*************************** Servidor ***********************" << endl;
-
+ 	cout << "Handshake concluido com o servidor" << endl;
 	do {
-		cout << "\nCliente: ";
-			
-		//Limpa o buffer
+		cout << "Cliente: ";
                 bzero(buffer,BUFFSIZE);
-		cin >> buffer;
+		cin.getline(buffer,BUFFSIZE);
                 sendto(descritor, buffer, strlen(buffer) , 0, (struct sockaddr *)&meuEndereco, sizeof(struct sockaddr_in));    
 
-	 	if (!strcmp(buffer,bye_srv)) {
+		if (!strcmp(buffer,bye_srv)) {
 
 			sendto(descritor, buffer, strlen(buffer) , 0, (struct sockaddr *)&meuEndereco, sizeof(struct sockaddr_in));
 			sair = true;
 
-		}
+		    	}
 		 
-		cout << "\nServidor: ";
+		cout << "Servidor: ";
+                bzero(buffer,BUFFSIZE);
                 cltlen = sizeof(struct sockaddr_in);
 		recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr *)&meuEndereco, &cltlen);
 		cout << buffer << " ";
@@ -68,13 +64,14 @@ void cliente(int porta)
 		if (!strcmp(buffer,bye_clt)) {
 				
 			sair = true;
-		    	
+
 		}
+	 
  
     	} while (!sair);
  
 
-        cout << "\n\n=> Fim de papo!" << endl;
+        cout << "\n\n=> Fim de papo com" << endl;
         close(descritor);
       
         exit(1);

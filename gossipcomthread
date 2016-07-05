@@ -1,0 +1,291 @@
+#include "gossip.h"
+using namespace std;
+
+struct sockaddr_in meuEndereco;	//Meu endereço
+struct sockaddr_in enderecoRemoto;//Endereço remoto
+char bufferSRV[BUFFSIZE];//buffer para troca de mensagens
+int descritorSRV;// descritor do socket
+socklen_t remlen;
+
+char hello_clt[10] = "HELLO_CLT";
+char hello_srv[10] = "HELLO_SRV";
+char bye_srv[10] = "BYE_SRV\n";
+char bye_clt[10] = "BYE_CLT\n";
+pthread_t ThreadEscutaSrv;
+pthread_t ThreadFalaSrv;
+pthread_t ThreadEscutaCLT;
+pthread_t ThreadFalaCLT;
+
+void servidor(int porta)
+{
+	
+	//criando um socket UDP
+
+	if ((descritorSRV = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+
+		cout <<"Erro ao criar socket"<< endl;
+
+	}
+
+	//Endereço Servidor
+	meuEndereco.sin_family = AF_INET;
+	meuEndereco.sin_addr.s_addr = htonl(INADDR_ANY);
+	meuEndereco.sin_port = htons(porta);
+	//Endereco Remoto
+	enderecoRemoto.sin_family = AF_INET;
+	enderecoRemoto.sin_addr.s_addr = htonl(INADDR_ANY);
+	enderecoRemoto.sin_port = htons(porta);
+
+
+        //Associando o socket a algum ip válido e porta especifica
+	if (bind(descritorSRV, (struct sockaddr *)&meuEndereco, sizeof(meuEndereco)) < 0){
+
+		cout <<"Erro ao criar socket"<< endl;
+
+	}
+
+	do{
+
+		//Recebe requisição do cliente
+                remlen = sizeof(enderecoRemoto);
+		recvfrom(descritorSRV, bufferSRV, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
+
+	}while(strcmp(bufferSRV,hello_srv));
+        //Limpa o bufferSRV
+        bzero(bufferSRV,BUFFSIZE);
+        //Envia Confirmação de recebimento
+	sendto(descritorSRV, hello_clt, strlen(hello_clt), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
+
+        cout << "Handshake completo com o cliente" << endl;
+        cout << "*************************** Servidor ***********************" << endl;
+
+        //Inicia a troca de mensagens pelo teclado
+        pthread_create(&ThreadFalaSrv, NULL, &falaSRV, NULL);
+	
+	pthread_create(&ThreadEscutaSrv, NULL, &escutaSRV, NULL);
+
+}
+
+void* escutaSRV(void *arg){
+        bool sair = false;
+	do {
+		
+		cout << "\nRemetente: ";
+                remlen = sizeof(enderecoRemoto);
+	    	recvfrom(descritorSRV, bufferSRV, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
+
+            	cout << bufferSRV << " ";
+
+            	if (!strcmp(bufferSRV,bye_srv)){
+                
+                	sair = true;
+            	}
+ 
+    	} while (!sair);
+
+        cout << "\n\n=> Fim de papo!!!";
+        close(descritorSRV);
+
+}
+
+void* falaSRV(void *arg){
+	bool sair = false;
+	do{
+		cout << "\nVocê: ";
+		sendto(descritorSRV, bufferSRV, strlen(bufferSRV), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
+          
+                if (!strcmp(bufferSRV,bye_clt)) {
+
+                    sendto(descritorSRV, bufferSRV, strlen(bufferSRV), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));              
+                    sair = true;
+
+                }
+	}while(!sair);
+        cout << "\n\n=> Fim de papo!!!";
+        close(descritorSRV);
+}
+**************************************************************************************************************
+
+#include"gossip.h"
+using namespace std;
+
+int main(int argc, char **argv){
+
+	if(argc == 2){
+
+		if(!strcmp(argv[1],"-S")){
+		
+			servidor(PORTA_PADRAO);
+
+		}
+		else if(!strcmp(argv[1],"host")){
+
+			cliente(PORTA_PADRAO);	
+		
+		}
+              	else{
+
+			cout << "Erro na chamada do programa" << endl;
+
+		}
+		
+	}
+        else if(argc == 3){
+		if(!strcmp(argv[1],"-S")){
+
+			servidor(atoi(argv[2]));		
+
+		}
+                else if(!strcmp(argv[1],"host")){
+
+			cliente(atoi(argv[2]));	
+		
+		}
+		else{
+
+			cout << "Erro na chamada do programa" << endl;
+
+		}
+
+	}
+	else{
+
+		cout << "Erro na chamada do programa" << endl;
+
+	}
+
+	return(0);
+}
+**************************************************************************************************************
+#include "gossip.h"
+using namespace std;
+
+struct sockaddr_in meuEndereco;	//Meu endereço
+struct sockaddr_in enderecoRemoto;//Endereço remoto
+char bufferSRV[BUFFSIZE];//buffer para troca de mensagens
+int descritorSRV;// descritor do socket
+socklen_t remlen;
+
+char hello_clt[10] = "HELLO_CLT";
+char hello_srv[10] = "HELLO_SRV";
+char bye_srv[10] = "BYE_SRV\n";
+char bye_clt[10] = "BYE_CLT\n";
+pthread_t ThreadEscutaSrv;
+pthread_t ThreadFalaSrv;
+pthread_t ThreadEscutaCLT;
+pthread_t ThreadFalaCLT;
+
+void servidor(int porta)
+{
+	
+	//criando um socket UDP
+
+	if ((descritorSRV = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+
+		cout <<"Erro ao criar socket"<< endl;
+
+	}
+
+	//Endereço Servidor
+	meuEndereco.sin_family = AF_INET;
+	meuEndereco.sin_addr.s_addr = htonl(INADDR_ANY);
+	meuEndereco.sin_port = htons(porta);
+	//Endereco Remoto
+	enderecoRemoto.sin_family = AF_INET;
+	enderecoRemoto.sin_addr.s_addr = htonl(INADDR_ANY);
+	enderecoRemoto.sin_port = htons(porta);
+
+
+        //Associando o socket a algum ip válido e porta especifica
+	if (bind(descritorSRV, (struct sockaddr *)&meuEndereco, sizeof(meuEndereco)) < 0){
+
+		cout <<"Erro ao criar socket"<< endl;
+
+	}
+
+	do{
+
+		//Recebe requisição do cliente
+                remlen = sizeof(enderecoRemoto);
+		recvfrom(descritorSRV, bufferSRV, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
+
+	}while(strcmp(bufferSRV,hello_srv));
+        //Limpa o bufferSRV
+        bzero(bufferSRV,BUFFSIZE);
+        //Envia Confirmação de recebimento
+	sendto(descritorSRV, hello_clt, strlen(hello_clt), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
+
+        cout << "Handshake completo com o cliente" << endl;
+        cout << "*************************** Servidor ***********************" << endl;
+
+        //Inicia a troca de mensagens pelo teclado
+        pthread_create(&ThreadFalaSrv, NULL, &falaSRV, NULL);
+	
+	pthread_create(&ThreadEscutaSrv, NULL, &escutaSRV, NULL);
+
+}
+
+void* escutaSRV(void *arg){
+        bool sair = false;
+	do {
+		
+		cout << "\nRemetente: ";
+                remlen = sizeof(enderecoRemoto);
+	    	recvfrom(descritorSRV, bufferSRV, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
+
+            	cout << bufferSRV << " ";
+
+            	if (!strcmp(bufferSRV,bye_srv)){
+                
+                	sair = true;
+            	}
+ 
+    	} while (!sair);
+
+        cout << "\n\n=> Fim de papo!!!";
+        close(descritorSRV);
+
+}
+
+void* falaSRV(void *arg){
+	bool sair = false;
+	do{
+		cout << "\nVocê: ";
+		sendto(descritorSRV, bufferSRV, strlen(bufferSRV), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
+          
+                if (!strcmp(bufferSRV,bye_clt)) {
+
+                    sendto(descritorSRV, bufferSRV, strlen(bufferSRV), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));              
+                    sair = true;
+
+                }
+	}while(!sair);
+        cout << "\n\n=> Fim de papo!!!";
+        close(descritorSRV);
+}
+*************************************************************************************************8
+#include <iostream>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <netdb.h> 
+#include <pthread.h>
+
+#define BUFFSIZE 2048
+#define PORTA_PADRAO 10101
+
+void cliente(int porta);
+
+void servidor(int porta);
+
+void* escutaCLT(void *arg);
+
+void* falaCLT(void *arg);
+
+void* escutaSRV(void *arg);
+
+void* falaSRV(void *arg);s
