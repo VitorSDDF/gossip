@@ -4,16 +4,15 @@ using namespace std;
 void servidor(int porta)
 {
 	
-	bool sair = false;
  	struct sockaddr_in meuEndereco;	//Meu endereço
 	struct sockaddr_in enderecoRemoto;//Endereço remoto
 	int descritor;// descritor do socket 
 	char buffer[BUFFSIZE];//buffer para troca de mensagens
         char hello_clt[10] = "HELLO_CLT";
         char hello_srv[10] = "HELLO_SRV";
-        char bye_srv[8] = "BYE_SRV";
-        char bye_clt[8] = "BYE_CLT";
-
+        char bye_srv[10] = "BYE_SRV";
+        char bye_clt[10] = "BYE_CLT";
+        char aux[10];
 	socklen_t remlen;
 
 
@@ -42,6 +41,7 @@ void servidor(int porta)
 
 	}
 
+	cout << "\n********************* Servidor ************************" << endl;
 	do{
 
 		//Recebe requisição do cliente
@@ -54,33 +54,36 @@ void servidor(int porta)
 	sendto(descritor, hello_clt, strlen(hello_clt), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
         cout << "Handshake concluido com o cliente" << endl;
         //Inicia a troca de mensagens pelo teclado
-    	cout << "Cliente: ";
         do {
             
+	    cout << "\nCliente: ";
+            bzero(buffer,BUFFSIZE);
             remlen = sizeof(enderecoRemoto);
 	    recvfrom(descritor, buffer, BUFFSIZE, MSG_WAITALL, (struct sockaddr*)&enderecoRemoto, &remlen);
 
             cout << buffer << " ";
-
-            if (!strcmp(buffer,bye_srv)){
+	    memcpy(aux,buffer,8);
+            aux[8] = '\0';
+            if (!strcmp(aux,bye_srv)){
                 
-                sair = true;
+                sendto(descritor, bye_clt, strlen(bye_clt), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
+                break;
             }
  
             cout << "\nServidor: ";
-
+	    bzero(buffer,BUFFSIZE);
             cin.getline(buffer,BUFFSIZE);
 
             sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));
-          
-            if (!strcmp(buffer,bye_clt)) {
+            memcpy(aux,buffer,8);
+            aux[8] = '\0';
+            if (!strcmp(aux,bye_clt)){
 
-            	sendto(descritor, buffer, strlen(buffer), 0, (struct sockaddr *)&enderecoRemoto, sizeof(struct sockaddr_in));              
-                sair = true;
+            	break;
 
             }
 
-        } while (!sair);
+        } while (1);
   
     cout << "\n=> Fim de papo!!!.";
  
