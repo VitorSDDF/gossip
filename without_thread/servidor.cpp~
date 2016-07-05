@@ -12,9 +12,9 @@ void servidor(int porta)
 	//msgs
     char hello_clt[10] = "HELLO_CLT";
     char hello_srv[10] = "HELLO_SRV";
-    char bye_srv[10] = "BYE_SRV";
+    // char bye_srv[10] = "BYE_SRV";
     char bye_clt[10] = "BYE_CLT";
-    char aux[10];
+    // char aux[10];
 
 	socklen_t remlen;
 
