@@ -11,4 +11,3 @@ Instruções:
 1)Digite make para compilar o programa
 2)Abra duas janelas de terminal e execute primeiro 'sudo ./gossip.out -S' ou 'sudo ./gossip.out -S porta'.
 3)Na outra janela execute 'sudo ./gossip.out host' ou 'sudo ./gossip.out host porta'.
-
