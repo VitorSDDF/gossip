@@ -1,4 +1,2 @@
-with_thread/*.out
-without_thread/*.o
-with_thread/*.out
-without_thread/*.o
+*.out
+*.o
